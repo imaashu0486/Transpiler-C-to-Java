@@ -49,6 +49,47 @@ The generated Java file is saved in the directory where the transpiler is execut
 - Converts `printf(...)` to `System.out.print(...)`
 - Maintains indentation and readable formatting
 
+## Architecture
+
+### Pipeline
+1. **Lexer**: Converts source text into tokens (keywords, identifiers, literals, operators).
+2. **Parser**: Recursive descent parser that builds an Abstract Syntax Tree (AST).
+3. **Code Generator**: Walks the AST and emits Java source code.
+
+### Core Components
+- **Lexer**: `lexer/Lexer.h`, `lexer/Lexer.cpp`
+- **Parser**: `lexer/Parser.h`, `lexer/Parser.cpp`
+- **AST**: `lexer/AST.h`
+- **Code Generator**: `lexer/CodeGenerator.h`, `lexer/CodeGenerator.cpp`
+- **CLI Entry**: `lexer/main.cpp`
+
+### Grammar (Simplified)
+```
+Program         → FunctionDecl*
+FunctionDecl    → Type Identifier '(' Parameters? ')' Block
+Type            → 'int' | 'float' | 'double' | 'char' | 'void'
+Block           → '{' Statement* '}'
+Statement       → IfStatement
+                | WhileStatement
+                | ForStatement
+                | ReturnStatement
+                | VarDeclaration
+                | ExpressionStatement
+Expression      → Assignment
+Assignment      → LogicalOr ('=' Assignment)?
+LogicalOr       → LogicalAnd ('||' LogicalAnd)*
+LogicalAnd      → Equality ('&&' Equality)*
+Equality        → Comparison (('==' | '!=') Comparison)*
+Comparison      → Additive (('<' | '>' | '<=' | '>=') Additive)*
+Additive        → Multiplicative (('+' | '-') Multiplicative)*
+Multiplicative  → Unary (('*' | '/' | '%') Unary)*
+Unary           → ('!' | '-' | '+') Unary | Primary
+Primary         → NUMBER
+                | STRING
+                | Identifier ('(' Arguments? ')')?
+                | '(' Expression ')'
+```
+
 ## Project Structure
 ```
 Transpiler/
@@ -112,6 +153,16 @@ public class TranspiledProgram {
 
 }
 ```
+
+## Testing
+Run the examples provided in the `examples/` directory:
+```bash
+./transpiler examples/example1_simple.c
+./transpiler examples/example2_functions.c
+./transpiler examples/example3_loops.c
+./transpiler examples/example4_conditions.c
+```
+Each run produces a Java file in the current directory (or your custom output path).
 
 ## Limitations
 The transpiler targets a restricted subset of C and does not currently support:
